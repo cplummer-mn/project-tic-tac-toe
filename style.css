@@ -44,11 +44,26 @@ body {
     gap: 20px;
     color: white;
     min-width: 300px;
+    font-size: 2vw;
 }
 
-li {
+button {
+    font-size: 2vw;
+    background-color: #EA8C55;
+    border: 0;
+    border-radius: 5px;
+    padding: 4px;
+    color: white;
+}
+
+a {
     text-decoration: none;
     list-style: none;
+}
+
+a:hover {
+    transform: scale(1.2);
+    cursor: pointer;
 }
 
 .gameboard-container {
