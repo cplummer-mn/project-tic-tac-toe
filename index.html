@@ -16,15 +16,17 @@
     <div class="container">
 
         <div class="header">
-            <h1>Tic-Tac-Toe</h1>
+            <h1>T i c - T a c - T o e</h1>
         </div>
 
         <div class="menu">
-            <h2>Menu</h2>
-            <a id="new-game-button">New Game</a>
-            <button id="player-vs-player-button" class="menu-button">Player vs. Player</button>
+            <h4>- Menu -</h4>
+            <button id="new-game-button">New Game</button>
+            <button id="player-vs-player-button" class="menu-button button-clicked">Player vs. Player</button>
             <button  id="player-vs-cpu-button" class="menu-button">Player vs. CPU</button>
-            <a>Difficulty</a>
+            <div>Difficulty</div>
+            <button id="easy-button" class="button-clicked">Easy</button>
+            <button id="hard-button">Not so Easy</button>
         </div>
 
         <div class="gameboard-container">
@@ -52,7 +54,14 @@
                 <div class="grid-square" key="8">T</div>
             </div>
 
+            <div id="win-card">
+                <div id="winner-text">Win!</div>
+                <button id="play-again-button">Play again</button>
+            </div>
+
         </div>
+
+        <div class="footer"><p>Website created by code.plum</p></div>
 
     </div>
 
