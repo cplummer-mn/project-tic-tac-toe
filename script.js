@@ -5,6 +5,7 @@ const GameBoard = (() => {
     let turn = "X";
     let gameMode =  "player";
     let moveFinished = true;
+    let difficulty = 'easy';
 
     const advanceTurn = () => {
         if(GameBoard.turn === "X") {
@@ -25,7 +26,12 @@ const GameBoard = (() => {
             if(checkWin()) return;
             if(GameBoard.gameMode === "cpu") {
                 moveFinished = false;
-                cpuMove();
+                if(GameBoard.difficulty == 'easy') {
+                    cpuMove();
+                }
+                else if(GameBoard.difficulty == 'hard') {
+                    cpuMoveHard();
+                }
             }
         }
         else return;
@@ -33,49 +39,41 @@ const GameBoard = (() => {
     }
 
     const checkWin = () => {
+        let winningCombs = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6]
+        ];
         
-        if((board[0] === "X" && board[1] === "X" && board[2] === "X" ) ||
-            (board[3] === "X" && board[4] === "X" && board[5] === "X" ) ||
-            (board[6] === "X" && board[7] === "X" && board[8] === "X" )) {
-                displayWin("X");
+        for(let comb of winningCombs) {
+            if (
+                GameBoard.board[comb[0]] == GameBoard.board[comb[1]] 
+                &&
+                GameBoard.board[comb[1]] == GameBoard.board[comb[2]]
+                &&
+                GameBoard.board[comb[0]] != ""
+            ) {
+                console.log(GameBoard.board[comb[0]] + 'is winner');
+                displayWin(GameBoard.board[comb[0]]);
+                
+                for(let i = 0; i < 3; i++) {
+                    document.getElementById(comb[i]).classList.add('highlighted');
+                }
                 return true;
             }
-        else if((board[0] === "X" && board[3] === "X" && board[6] === "X" ) ||
-            (board[1] === "X" && board[4] === "X" && board[7] === "X" ) ||
-            (board[2] === "X" && board[5] === "X" && board[8] === "X" )) {
-                displayWin("X");
-                return true;
-            }
-        else if((board[0] === "X" && board[4] === "X" && board[8] === "X" ) ||
-            (board[2] === "X" && board[4] === "X" && board[6] === "X" )) {
-                displayWin("X");
-                return true;
-            }
-
-        else if((board[0] === "O" && board[1] === "O" && board[2] === "O" ) ||
-            (board[3] === "O" && board[4] === "O" && board[5] === "O" ) ||
-            (board[6] === "O" && board[7] === "O" && board[8] === "O" )) {
-                displayWin("O");
-                return true;
-            }
-        else if((board[0] === "O" && board[3] === "O" && board[6] === "O" ) ||
-            (board[1] === "O" && board[4] === "O" && board[7] === "O" ) ||
-            (board[2] === "O" && board[5] === "O" && board[8] === "O" )) {
-                displayWin("O");
-                return true;
-            }
-        else if((board[0] === "O" && board[4] === "O" && board[8] === "O" ) ||
-            (board[2] === "O" && board[4] === "O" && board[6] === "O" )) {
-                displayWin("O");
-                return true;
-            }
-        else if(!board.includes("")) {
+        }
+        if(!GameBoard.board.includes("")) {
+            console.log('is a tie');
             displayWin();
             return true;
         }
-        else return false;
         
-        
+
     }
 
     const newGame = () => {
@@ -86,6 +84,11 @@ const GameBoard = (() => {
         GameBoard.turn = 'X';
         moveFinished = true;
         document.getElementById("win-card").style.display = "none";
+        const gridSquares = document.getElementsByClassName('grid-square');
+        console.log(gridSquares);
+        for(square of gridSquares) {
+            square.classList.remove('highlighted');
+        }
     }
 
     const displayWin = (winner) => {
@@ -117,16 +120,116 @@ const GameBoard = (() => {
             }
         }
         var randomMove = emptySquares[Math.floor(Math.random() * emptySquares.length)];
-        console.log(randomMove);
         GameBoard.board[randomMove] = "O";
         DisplayController.updateBoard();
         advanceTurn();
         moveFinished = true;
         checkWin();
     }
+
+    const cpuMoveHard = async () => {
+        await delay(500);
+        console.log("computer move!");
+        let moveToMake = findBestMove(GameBoard.board);
+        GameBoard.board[moveToMake] = 'O';
+        DisplayController.updateBoard();
+        advanceTurn();
+        moveFinished = true;
+        checkWin();
+    }
+
+    const isMovesLeft = (boardArray) => {
+        if(boardArray.includes("")) {
+            return true;
+        }
+        return false;
+    }
+
+    const evaluate = (b) => {
+        let winningCombs = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6]
+        ];
+        
+        for(let comb of winningCombs) {
+            if (
+                b[comb[0]] == b[comb[1]] 
+                &&
+                b[comb[1]] == b[comb[2]]
+                &&
+                b[comb[0]] != ""
+            ) {
+                if(b[comb[0]] == 'O') {
+                    return +10;
+                }
+                else return -10;
+            }
+        }
+        return 0;
+
+    }
+
+    const minimax = (boardArray, depth, isMax) => {
+        let score = evaluate(boardArray);
+        if(score == 10) return score;
+        if(score == -10) return score; 
+        if(isMovesLeft(boardArray) == false) return 0;
+
+        if(isMax) {
+            let best = -1000;
+
+            // Go through entire array
+            for(let i = 0; i < boardArray.length; i++) {
+                if(boardArray[i] == '') {
+                    boardArray[i] = 'O';
+                    best = Math.max(best, minimax(boardArray, depth + 1, !isMax));
+                    boardArray[i] = '';
+                }
+            }
+            return best;
+        }
+
+        else {
+            let best = 1000;
+
+            // Go through entire array
+            for(let i = 0; i < boardArray.length; i++) {
+                if(boardArray[i] == '') {
+                    boardArray[i] = 'X';
+                    best = Math.min(best, minimax(boardArray, depth + 1, !isMax));
+                    boardArray[i] = '';
+                }
+            }
+            return best;
+        }
+    }
+
+    const findBestMove = (boardArray) => {
+        let bestVal = -1000;
+        let bestMove = 1;
+
+        for(let i = 0; i < boardArray.length; i++) {
+            if(boardArray[i] == '') {
+                boardArray[i] = 'O';
+                let moveVal = minimax(boardArray, 0, false);
+                boardArray[i] = '';
+                if(moveVal > bestVal){
+                    bestMove = i;
+                    bestVal = moveVal;
+                }
+            }
+        }
+        return bestMove;
+    }
     
 
-    return { board , turn , gameMode , gridClick , newGame };
+    return { board , turn , gameMode , difficulty , gridClick , newGame };
 })();
 
 
@@ -223,9 +326,11 @@ function playerVsCpuClicked() {
 function easyButtonClicked() {
     easyButton.className = "button-clicked";
     hardButton.classList.remove("button-clicked");
+    GameBoard.difficulty = 'easy';
 }
 
 function hardButtonClicked() {
     hardButton.className = "button-clicked";
     easyButton.classList.remove("button-clicked");
+    GameBoard.difficulty = 'hard';
 }
