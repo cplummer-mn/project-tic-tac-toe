@@ -18,17 +18,18 @@ const GameBoard = (() => {
     const gridClick = (event) => {
         let gridKey = event.target.getAttribute("key");
         if(!moveFinished) return;
-        moveFinished = false;
         if(board[gridKey] === "") {
             board[gridKey] = GameBoard.turn;
             DisplayController.updateBoard();
             advanceTurn();
             if(checkWin()) return;
             if(GameBoard.gameMode === "cpu") {
+                moveFinished = false;
                 cpuMove();
             }
         }
         else return;
+         
     }
 
     const checkWin = () => {
